@@ -1,0 +1,35 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+OPTIONS        /*path                controllers.Application.options(path)
+
+GET            /                     controllers.Application.index
+
+GET            /newsexplorer         controllers.Application.display1
+
+GET            /character            controllers.Application.display2
+
+GET            /retail               controllers.Application.display3
+
+#GET             /call                controllers.Application.call(id: String,fFilter: Double)
+#GET         /getVertices          controllers.Application.getVertices(news: String,frequencyfilter: Double)
+
+#GET        /getVertices1         controllers.Application.getVertices1(news: String,frequencyfilter: Double)
+GET           /getVertices1         controllers.Application.getVertices1(news: String,frequencyfilter: Double)
+
+GET            /getVertices2         controllers.Application.getVertices2(news: String,frequencyfilter: Double)
+
+POST            /getVertices3         controllers.Application.getVertices3
+
+POST           /addEdge              controllers.Application.addEdge
+
+POST            /addVertex           controllers.Application.addVertex
+
+# Map static resources from the /public folder to the /assets URL path
+GET            /assets/*file         controllers.Assets.versioned(path="/public", file: Asset)
+
+GET            /webjars/*file        controllers.WebJarAssets.at(file)
+
+GET /sparkjobbuilder        controllers.QueryController.sparkJobBuilder(fromColumnList:List[String],toColumnsList:List[String])

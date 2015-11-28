@@ -1,0 +1,140 @@
+@(message: String, tableData: (String,Seq[Seq[entityobj]]),search: String,filter: Double)
+
+@main("Welcome to Play") {
+
+	<div class="container">
+		<div class="row">
+			<div class="container">
+				<h2>Relations UI</h2>
+				<form id = "form1" role="form" action="/getVertices1">
+					<div class="form-group">
+
+						<div class="col-xs-6 col-sm-5 col-md-12">
+							<form class="form" role="form">
+								<div class="form-group">
+									<legend>Entity Search</legend>
+									<div class="row">
+										<div class="col-md-4">
+											<label for="search-input1">Entity Name</label>
+											<input type="text" id="search-input1" class="form-control" name="news" value="@search">
+										</div>
+										<div class="col-md-4">
+											<label for="frequency">Entity Confidence</label>
+											<input type="text" id="frequency" class="form-control" value="@tableData._1">
+										</div>
+									</div>
+								</div>
+
+
+								<div class="form-group">
+									<div class="row">
+										<div class="col-md-4">
+											<label for="search-input2">Confidence Filter</label>
+											<input type="text" id="search-input2" class="form-control" name="frequencyfilter" value="0">
+										</div>
+									</div>
+								</div>
+
+								<div class="form-group">
+									<div class="row">
+										<button class="btn btn-default" type="submit"  onclick="getSearchResult();">Go!</button>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</form>
+			</div>
+
+
+			@if(tableData._2 != Nil) {
+				<div class="container">
+					<div id = "table1" class="container">
+						<h2>Label TO</h2>
+
+						<table class="table">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>VConfidence</th>
+									<th>Strength</th>
+									<th>EConfidence</th>
+								</tr>
+							</thead>
+							<tbody>
+
+
+							@tableData._2(1).map(data => {
+								val parsed = data.name.split("\"")(1)
+								val finalStrength = data.strength.split("\"")(1)
+								val baseUrl = "/getVertices1?news="
+								val uri = helper.urlEncode(parsed)
+
+									<tr>
+									<td><a style="text-decoration:none" href={baseUrl + uri + "&frequencyfilter=0"}> {parsed}</a></td>
+									<td>{data.vFrequency}</td>
+									<td>{finalStrength}</td>
+									<td>{data.frequency}</td>
+									</tr>
+							})
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		<div id = "table2" class="container">
+			<h2>Label Relation</h2>
+
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>VConfidence</th>
+						<th>Strength</th>
+						<th>EConfidence</th>
+					</tr>
+				</thead>
+				<tbody>
+
+
+				@tableData._2(0).map(data => {
+					val parsed = data.name.split("\"")(1)
+					val finalStrength = data.strength.split("\"")(1)
+					val baseUrl = "/getVertices1?news="
+					val uri = helper.urlEncode(parsed)
+						<tr>
+						<td><a style="text-decoration:none" href={baseUrl + uri + "&frequencyfilter=0"}>{parsed}</a></td>
+						<td>{data.vFrequency}</td>
+						<td>{finalStrength}</td>
+						<td>{data.frequency}</td>
+						</tr>
+				})
+				</tbody>
+			</table>
+		</div>
+		}
+	</div>
+	@*<div class="container">*@
+	@*<h2>Basic Table</h2>*@
+
+	@*<table class="table">*@
+	@*<thead>*@
+	@*<tr>*@
+	@*<th>Name</th>*@
+	@*</tr>*@
+	@*</thead>*@
+	@*<tbody id = "row">*@
+	@*<tr>*@
+	@*<td>John</td>*@
+	@*</tr>*@
+
+	@*</tbody>*@
+	@*</table>*@
+	@*</div>*@
+
+	<script>
+
+    $("#search-input2").val(@filter)
+
+  </script>
+}

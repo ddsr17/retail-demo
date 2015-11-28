@@ -1,0 +1,282 @@
+@import play.api.libs.json.JsValue
+
+
+@main("Welcome to Play") {
+
+  <div class="container">
+    <div class="row">
+      <div class="container">
+        <h2>Relations UI</h2>
+        <form id = "form1" role="form">
+          <div class="form-group">
+
+            <div class="col-xs-12 col-sm-12 col-md-12">
+              <form class="form" role="form">
+                <div class="form-group">
+                  <legend>Entity Search</legend>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <label for="search-input1">Entity Name</label>
+                      <input type="text" id="search-input1" class="form-control" name="news" value="">
+                    </div>
+                    <div class="col-md-4">
+                      <label for="frequency">Entity Confidence</label>
+                      <input type="text" id="search-input2" class="form-control" name="frequencyfilter" value="0">
+                    </div>
+                  </div>
+                </div>
+
+
+                <div class="form-group">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <label for="search-input2">Confidence Filter</label>
+                      <input type="text" id="search-input3" class="form-control" name="frequencyfilter" value="0">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <div class="row">
+                    <button class="btn btn-default" id="button" type="button">Go!</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="content">
+    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+      <li class="active"><a href="#graph" data-toggle="tab">Graph</a></li>
+      <li><a href="#add" data-toggle="tab">Add Items</a></li>
+    </ul>
+    <div id="my-tab-content" class="tab-content">
+      <div class="tab-pane active" id="graph">
+        <h1>Graph</h1>
+      </div>
+      <div class="tab-pane" id="add">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Add Vertex</h3>
+              </div>
+              <div class="panel-body">
+                <form role="form">
+                  <div class="form-group">
+                    <label for="search">Entity Name</label>
+                    <input id="search" class="form-control" type="text">
+                  </div>
+                  <button type="button" id="vertex" class="btn btn-default">Add</button>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Add Edge</h3>
+              </div>
+              <div class="panel-body">
+                <form role="form">
+                  <div class="form-group">
+                    <label for="start">Start Name</label>
+                    <input class="form-control" id="start" type="text">
+                  </div>
+                  <div class="form-group">
+                    <label for="end">End Name</label>
+                    <input class="form-control" id="end" type="text">
+                  </div>
+                  <button type="button" id="edge" class="btn btn-default">Add</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style type="text/css">
+  .node { stroke: #222; stroke-width: 1.5px; }
+  .node.actor { fill: #888; }
+  .node.movie { fill: #BBB; }
+  .link { stroke: #999; stroke-opacity: 0.9; stroke-width: 1px; }
+  </style>
+
+  <script>
+
+	function showGraph(chartdata){
+
+		$("#graph").html(" ")
+        console.log("chart data -->", chartdata);
+
+		var links = []
+        for(i=1; i<chartdata.length;++i){
+
+        	var changetoDouble = parseFloat(chartdata[i].EFrequency)
+        	links.push({"source": 0,"target": i,"value": chartdata[i].strength,"bond": changetoDouble})
+        }
+
+//          $.each(links,function(j,k){
+//				console.log(k);
+//			  })
+		console.log("got link --->" ,links)
+
+          var width = 1000,
+		    height = 650;
+
+		   var widthScale = d3.scale.linear()
+		   					.domain([0,2000])
+		   					.range([2,20]);
+
+
+		   var bondScale = d3.scale.linear()
+		   					.domain([0.1])
+		   					.range([10,80])
+
+		var color = d3.scale.category20();
+
+		var force = d3.layout.force()
+		    .charge(-120)
+		    .size([width, height])
+		    //.linkDistance(100)
+		    	.linkDistance(function(d){
+		    	 d.bond = (1/d.bond)
+                  d.bond = d.bond*300 + 60
+		    	 return d.bond;
+		    	 });
+
+		var svg = d3.select("#graph").append("svg")
+		    .attr("width", width)
+		    .attr("height", height);
+
+
+			var graph = chartdata
+		  force
+		      .nodes(graph)
+		      .links(links)
+		      .start();
+
+		  var link = svg.selectAll(".link")
+		      .data(links)
+		    .enter().append("line")
+		      .attr("class", "link")
+		      .style("stroke-width", function(d) {
+		      //console.log(widthScale(Math.sqrt(d.value)))
+		      return widthScale(Math.sqrt(d.value));
+		      });
+
+		  var elem = svg.selectAll(".node").data(graph);
+		  var elemEnter = elem.enter().append("g");
+		  var node = elemEnter.append("circle")
+		      .attr("class", "node")
+		      .attr("r", function(d){
+		      if(d.index === 0){return 10}
+		      else return 5
+		      })
+		      .style("fill", function(d){ return color(Math.floor((Math.random() * 10) + 1)); })
+		      .on("click",function(d){ var a = clicked(d.name,d.index);
+		      })
+		      .call(force.drag);
+
+		var mytext = elemEnter.append("text").text(function(d){ return d.name ;});
+
+		  node.append("title")
+		      .text(function(d) { return d.name; });
+
+		  force.on("tick", function() {
+		    link.attr("x1", function(d) { return d.source.x; })
+		        .attr("y1", function(d) { return d.source.y; })
+		        .attr("x2", function(d) { return d.target.x; })
+		        .attr("y2", function(d) { return d.target.y; });
+
+		    node.attr("cx", function(d) { return d.x })
+		        .attr("cy", function(d) { return d.y });
+		   // node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+		    mytext.attr("dx",function(d){ return d.x - 30;})
+		    		.attr("dy",function(d){ return d.y + 15;});
+		  });
+        }
+
+        $("#vertex").click(function(){
+        	var name = $("#search").val()
+
+        	var d = {"Vname": name}
+
+        	$.ajax({
+				type: "POST",
+				url: "/addVertex",
+				dataType:"json",
+				contentType:"application/json; charset=utf-8",
+				data: JSON.stringify(d),
+				success: function(data){
+				console.log(data)
+
+				}
+				})
+
+        })
+
+        $("#edge").click(function(){
+        	var start = $("#start").val()
+        	var end = $("#end").val()
+
+        	var d = {"initial" : start , "ending" : end}
+			 $.ajax({
+				type: "POST",
+				url: "/addEdge",
+				dataType:"json",
+				contentType:"application/json; charset=utf-8",
+				data: JSON.stringify(d),
+				success: function(data){
+					  console.log("gotdata ---> " , data)
+
+						}
+					  });
+        })
+
+	$("#button").click(function(){
+		var name = $("#search-input1").val()
+		console.log(name)
+
+		var filter = $("#search-input3").val()
+		console.log(filter)
+
+		var d = {"news" : name , "frequencyfilter" : filter}
+	 $.ajax({
+        type: "POST",
+        url: "/getVertices3",
+        dataType:"json",
+        contentType:"application/json; charset=utf-8",
+        data: JSON.stringify(d),
+        success: function(data){
+			  console.log("gotdata ---> " , data)
+
+			  var chartdata = [];
+			  chartdata.push({"name": d.news})
+			  $.each(data,function(i,d){
+
+			  //console.log(i,d);
+
+			  $.each(d,function(j,k){
+
+				//console.log(k);
+				chartdata.push(k);
+			  })
+
+			  });
+
+			//setTimeout(function(){ showGraph(chartdata); }, 1500);
+	   }
+	   })
+	   })
+
+  </script>
+
+}
