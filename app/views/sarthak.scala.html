@@ -1,0 +1,346 @@
+@import play.api.libs.json.JsValue
+
+
+@main("Welcome to Play") {
+
+  <div class="container">
+    <div class="row">
+      <div class="container">
+        <h2>Relations UI</h2>
+        <form id = "form1" role="form">
+          <div class="form-group">
+
+            <div class="col-xs-12 col-sm-12 col-md-12">
+              <form class="form" role="form">
+                <div class="form-group">
+                  <legend>Entity Search</legend>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <label for="search-input1">Entity Name</label>
+                      <input type="text" id="search-input1" class="form-control" name="news" value="">
+                    </div>
+
+                    <div class="col-md-4">
+                      <label for="search-input2">Confidence Filter</label>
+                      <input type="text" id="search-input3" class="form-control" name="frequencyfilter" value="0">
+                    </div>
+                    <div class="col-md-4">
+                      <label for="frequency">Entity Confidence</label>
+                      <input type="text" id="search-input2" class="form-control" name="frequency" value="0">
+                    </div>
+                  </div>
+                </div>
+
+
+                <div class="form-group">
+                  <div class="row">
+                    <button class="btn btn-default" id="button" type="button">Go!</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="content">
+    <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+      <li class="active"><a href="#graph" data-toggle="tab">Graph</a></li>
+      <li><a href="#add" data-toggle="tab">Add Items</a></li>
+    </ul>
+    <div id="my-tab-content" class="tab-content">
+      <div class="tab-pane active" id="graph">
+        <h1>Graph</h1>
+      </div>
+      <div class="tab-pane" id="add">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Add Vertex</h3>
+              </div>
+              <div class="panel-body">
+                <form role="form">
+                  <div class="form-group">
+                    <label for="search">Entity Name</label>
+                    <input id="search" class="form-control" type="text">
+                  </div>
+                  <button type="button" id="vertex" class="btn btn-default">Add</button>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Add Edge</h3>
+              </div>
+              <div class="panel-body">
+                <form role="form">
+                  <div class="form-group">
+                    <label for="start">Start Name</label>
+                    <input class="form-control" id="start" type="text">
+                  </div>
+                  <div class="form-group">
+                    <label for="end">End Name</label>
+                    <input class="form-control" id="end" type="text">
+                  </div>
+                  <button type="button" id="edge" class="btn btn-default">Add</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style type="text/css">
+  /*.node { stroke: #222; stroke-width: 1.5px; }*/
+  /*.node.actor { fill: #888; }*/
+  /*.node.movie { fill: #BBB; }*/
+  /*.link { stroke: #999; stroke-opacity: 0.9; stroke-width: 1px; }*/
+
+
+
+  .node circle {
+  cursor: pointer;
+  stroke: #3182bd;
+  stroke-width: 1.5px;
+  }
+
+  .node text {
+  font: 10px sans-serif;
+  pointer-events: none;
+  text-anchor: middle;
+  }
+
+  line.link {
+  fill: none;
+  stroke: #9ecae1;
+  stroke-width: 1.5px;
+  }
+
+  </style>
+
+  <script>
+
+        $("#vertex").click(function(){
+        	var name = $("#search").val()
+
+        	var d = {"Vname": name}
+
+        	$.ajax({
+				type: "POST",
+				url: "/addVertex",
+				dataType:"json",
+				contentType:"application/json; charset=utf-8",
+				data: JSON.stringify(d),
+				success: function(data){
+				console.log(data)
+
+				}
+				})
+
+        })
+
+        $("#edge").click(function(){
+        	var start = $("#start").val()
+        	console.log(start)
+        	var end = $("#end").val()
+        	console.log(end)
+
+        	var d = {"initial" : start , "ending" : end}
+			 $.ajax({
+				type: "POST",
+				url: "/addEdge",
+				dataType:"json",
+				contentType:"application/json; charset=utf-8",
+				data: JSON.stringify(d),
+				success: function(data){
+					  console.log("gotdata ---> " , data)
+
+						}
+					  });
+        })
+
+	$("#button").click(function(){
+		var name = $("#search-input1").val()
+		console.log(name)
+
+		var filter = $("#search-input3").val()
+		console.log(filter)
+
+		var d = {"news" : name , "frequencyfilter" : filter}
+	 $.ajax({
+        type: "POST",
+        url: "/getVertices3",
+        dataType:"json",
+        contentType:"application/json; charset=utf-8",
+        data: JSON.stringify(d),
+        success: function(data){
+        $("#search-input2").val(data[0].entityid)
+
+        function color(d) {
+  return d._children ? "#3182bd" // collapsed package
+      : d.children ? "#c6dbef" // expanded package
+      : "#fd8d3c"; // leaf node
+}
+
+function tick() {
+  link.attr("x1", function(d) { return d.source.x; })
+      .attr("y1", function(d) { return d.source.y; })
+      .attr("x2", function(d) { return d.target.x; })
+      .attr("y2", function(d) { return d.target.y; });
+
+  node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+}
+
+        // Toggle children on click.
+function click(d) {
+  if (d3.event.defaultPrevented) return; // ignore drag
+  if (d.children) {
+    d._children = d.children;
+    d.children = null;
+  } else {
+    d.children = d._children;
+    d._children = null;
+  }
+  update();
+}
+
+      function flatten(root) {
+        var nodes = [], i = 0;
+
+        function recurse(node) {
+
+          if (node.children) {
+          console.log("called")
+          console.log("child is ", node.children)
+          node.children.forEach(recurse);
+          }
+          if (!node.id) node.id = ++i;
+          nodes.push(node);
+        }
+
+        recurse(root);
+        return nodes;
+      }
+
+      function update() {
+  var nodes = flatten(root),
+      links = d3.layout.tree().links(nodes);
+
+  // Restart the force layout.
+  force
+      .nodes(nodes)
+      .links(links)
+      .start();
+
+  // Update links.
+  link = link.data(links, function(d) { return d.target.id; });
+
+  link.exit().remove();
+
+  link.enter().insert("line", ".node")
+      .attr("class", "link");
+
+  // Update nodes.
+  node = node.data(nodes, function(d) { return d.id; });
+
+  node.exit().remove();
+
+  var nodeEnter = node.enter().append("g")
+      .attr("class", "node")
+      .on("click", click)
+      .call(force.drag);
+
+  nodeEnter.append("circle")
+      .attr("r", function(d) { return Math.sqrt(d.size) / 10 || 4.5; });
+
+  nodeEnter.append("text")
+      .attr("dy", ".35em")
+      .text(function(d) { return d.name; });
+
+  node.select("circle")
+      .style("fill", color);
+}
+
+              //console.log("data is ",data)
+              var finaldata = []
+
+              $.each(data,function(i,d){
+                  var x = d.children
+
+                  //console.log("child is accessible " + x)
+                  var t = JSON.parse(x)
+                  //console.log("children ",t)
+                  var y = []
+                  $.each(t,function(j,k){
+
+                    // console.log("child ",k)
+                     y.push(k)
+                  })
+                  //console.log(y)
+                  d.children = y
+                  finaldata.push(d)
+              })
+
+             // console.log("final " ,finaldata)
+
+              var chartdata = []
+              chartdata.push({"name": d.news,"children": finaldata})
+
+//			  var chartdata = [];
+//			  chartdata.push({"name": d.news})
+//			  $.each(data,function(i,d){
+//
+//			  //console.log(i,d);
+//
+//			  $.each(d,function(j,k){
+//
+//				//console.log(k);
+//				chartdata.push(k);
+//			  })
+
+//			  });
+             console.log("chartdata is " , chartdata)
+            //showGraph(chartdata);
+			//setTimeout(function(){ showGraph(chartdata); }, 1500);
+
+
+			$("#graph").html(" ")
+        console.log("chart data -->", chartdata);
+
+        var nodes = chartdata
+
+var width = 960,
+    height = 500,
+    root;
+
+var force = d3.layout.force()
+    .linkDistance(80)
+    .charge(-120)
+    .gravity(.05)
+    .size([width, height])
+    .on("tick", tick);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var link = svg.selectAll(".link"),
+    node = svg.selectAll(".node");
+
+
+  root = nodes[0];
+  update();
+	   }
+	   })
+	   })
+
+  </script>
+
+}
