@@ -41,6 +41,7 @@ class Application extends Controller {
   }
 
   var allInv : Seq[String] = Seq()
+  var secondInv: Seq[String] = Seq()
   val nResults = 10
 
   def getVertices3 = Action.async(BodyParsers.parse.json) { implicit request =>
@@ -53,10 +54,10 @@ class Application extends Controller {
     var freq = ""
     println(newsItem)
 
-    val futureResult = WS.url("http://40.124.54.95:8182/graphs/walmart/vertices?key=name&value=" + newsItem).get().map {
+
+    val futureResult = WS.url("http://40.124.54.95:8182/graphs/walmart/vertices?key=name&value=" + newsItem).withHeaders("Accept" -> "application/json").get().map {
       response => {
         val temp = (response.json \ "results").as[JsArray].value
-
         temp match {
           case Nil => {
             freq = ""
@@ -72,14 +73,14 @@ class Application extends Controller {
       }
     }
 
-    var secondInv: Seq[String] = Seq()
+
     var thirdInv: Seq[Seq[String]] = Seq()
 
     val future = futureResult.flatMap{a =>{
 
       var data: Seq[Seq[JsValue]] = Seq()
 
-      val output = WS.url("http://40.124.54.95:8182/graphs/walmart/vertices/" + a._1 + "/outE?_label=relation&_take=" + nResults).get().map {
+      val output = WS.url("http://40.124.54.95:8182/graphs/walmart/vertices/" + a._1 + "/outE?_label=relation&_take=" + nResults).withHeaders("Accept" -> "application/json").get().map {
         result => {
           (result.json \ "results").as[JsArray].value
         }
@@ -130,6 +131,7 @@ class Application extends Controller {
         }
         }
 
+        println("got 1st degree nodes")
         val secondLevelEdges = x.map(d => {
           var seq: Seq[String] = Seq()
           val parentid = d._1
@@ -156,44 +158,49 @@ class Application extends Controller {
           childata
         })
 
+        println("got second degree nodes")
+        println("now combining first and second degree nodes")
         val ness = Future.sequence(secondLevelEdges)
 
-//        ness.map(x => {
-//          //println("second " + secondInv.mkString(","))
-//          val seq = secondInv.mkString(",")
-//
-//          val allnames = WS.url("http://40.124.54.95:8182/graphs/walmart/tp/batch/vertices?values=[" + seq +"]").get().map{result =>{
-//            val allvalues = (result.json \ "results").as[JsArray].value
-//            allvalues.map(onevalue =>{
-//              val name=  (onevalue \ "name").get.toString()
-//              val id = (onevalue \ "_id").get.toString()
-//              (id,name)
-//            })
-//          }
-//          }
-//
-//          val oneseq = x.flatMap(y =>{
-//            y
-//          })
-//
-//          val seqlen = x.map(y => {y.length})
-//
-//
-//          val withnames = x.map(y => {
-//            val ii = y.map(z =>{
-//              val hh = allnames.map(r => {
-//                r.map(k =>{
-//                  k(z.name)
-//                })
-//              })
-//              hh
-//            })
-//            ii
-//          })
-//          x
-//        })
+        val changedtoname = ness.flatMap(x => {
+          val seq = secondInv.mkString(",")
 
-        val combinedFuture = Future.sequence(Seq(ness.zip(putintuple)))
+          val allnames = WS.url("http://40.124.54.95:8182/graphs/walmart/tp/batch/vertices?values=[" + seq +"]").get().map{result =>{
+            val allvalues = (result.json \ "results").as[JsArray].value
+            val gg = allvalues.map(onevalue =>{
+              val name=  (onevalue \ "name").get.toString()
+              val id = (onevalue \ "_id").get.toString()
+              (id,name)
+            })
+            gg
+          }
+          }
+
+          var m:Map[String,String] = Map()
+
+          val all =allnames.map(d => {
+            d.map{r =>{
+              m += r._1 -> r._2
+              r
+            }}
+            d
+          })
+
+          val withnames = x.map(y => {
+            val ii = y.map(z =>{
+              val kk = all.map(t => {
+                var a = m.get(z.name).get.replaceAll("^\"|\"$", "")
+                childobj(a,z.strength,z.frequency)
+              })
+              kk
+            })
+            Future.sequence(ii)
+          })
+          Future.sequence(withnames)
+        })
+
+
+        val combinedFuture = Future.sequence(Seq(changedtoname.zip(putintuple)))
         val combined = combinedFuture.map(t => {
           t.flatMap(v => {
             val one = v._1
@@ -214,8 +221,7 @@ class Application extends Controller {
 
       val output1 = htmlInput.map {
         case result: (String,Seq[(Seq[childobj], newentity)]) =>
-          println("result check " + result)
-
+          println("sending result")
           val rel = result._2.map(k => {
             val x = k._2
             val ch = k._1

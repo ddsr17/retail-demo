@@ -3,6 +3,8 @@
 # ~~~~
 
 # Home page
+OPTIONS        /*path                controllers.Application.options(path)
+
 GET         /                     controllers.Application.index
 
 GET         /retail               controllers.Application.display3
