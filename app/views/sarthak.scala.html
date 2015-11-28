@@ -98,12 +98,6 @@
   </div>
 
   <style type="text/css">
-  /*.node { stroke: #222; stroke-width: 1.5px; }*/
-  /*.node.actor { fill: #888; }*/
-  /*.node.movie { fill: #BBB; }*/
-  /*.link { stroke: #999; stroke-opacity: 0.9; stroke-width: 1px; }*/
-
-
 
   .node circle {
   cursor: pointer;
@@ -268,19 +262,15 @@ function click(d) {
       .style("fill", color);
 }
 
-              //console.log("data is ",data)
               var finaldata = []
 
               $.each(data,function(i,d){
                   var x = d.children
 
-                  //console.log("child is accessible " + x)
                   var t = JSON.parse(x)
-                  //console.log("children ",t)
                   var y = []
                   $.each(t,function(j,k){
 
-                    // console.log("child ",k)
                      y.push(k)
                   })
                   //console.log(y)
@@ -288,28 +278,10 @@ function click(d) {
                   finaldata.push(d)
               })
 
-             // console.log("final " ,finaldata)
-
               var chartdata = []
               chartdata.push({"name": d.news,"children": finaldata})
 
-//			  var chartdata = [];
-//			  chartdata.push({"name": d.news})
-//			  $.each(data,function(i,d){
-//
-//			  //console.log(i,d);
-//
-//			  $.each(d,function(j,k){
-//
-//				//console.log(k);
-//				chartdata.push(k);
-//			  })
-
-//			  });
              console.log("chartdata is " , chartdata)
-            //showGraph(chartdata);
-			//setTimeout(function(){ showGraph(chartdata); }, 1500);
-
 
 			$("#graph").html(" ")
         console.log("chart data -->", chartdata);

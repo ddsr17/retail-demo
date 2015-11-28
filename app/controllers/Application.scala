@@ -51,7 +51,6 @@ class Application extends Controller {
 
     val newsItem = item.toLowerCase()
     var freq = ""
-    //    val newsItem = newsForm.bindFromRequest().get
     println(newsItem)
 
     val futureResult = WS.url("http://40.124.54.95:8182/graphs/walmart/vertices?key=name&value=" + newsItem).get().map {
@@ -67,13 +66,8 @@ class Application extends Controller {
           }
         }
 
-        //        val id = temp.map(res => (res \ "_id").get.toString()) match {
-        //          case Nil => None
-        //          case string: Seq[String] => Some(string.head)
-        //        }
-
         val id = (temp.head \ "_id").get.toString()
-        //intln("id " + id)
+
         (id, freq)
       }
     }
@@ -84,7 +78,6 @@ class Application extends Controller {
     val future = futureResult.flatMap{a =>{
 
       var data: Seq[Seq[JsValue]] = Seq()
-      //case None => Future(Seq[JsValue]())
 
       val output = WS.url("http://40.124.54.95:8182/graphs/walmart/vertices/" + a._1 + "/outE?_label=relation&_take=" + nResults).get().map {
         result => {
@@ -104,19 +97,10 @@ class Application extends Controller {
             tuple
           })
 
-          //check.foreach().groupBy()
 
           val afilter = check.filter(x => {
             x._2._1 > fFilter
           })
-
-          //            var results: Seq[(String, (Double, String))] = Seq()
-          //            if (fFilter == -1) {
-          //              results = afilter.take(nResults)
-          //            }
-          //            else {
-          //              results = afilter.take(nResults)
-          //            }
 
           afilter
         })
@@ -146,8 +130,6 @@ class Application extends Controller {
         }
         }
 
-        println("hello")
-
         val secondLevelEdges = x.map(d => {
           var seq: Seq[String] = Seq()
           val parentid = d._1
@@ -157,10 +139,7 @@ class Application extends Controller {
           })
 
           val childata = child.map(valueSeq => {
-            //            x.map(res => {
-            //              val inv = (res \ "_id").get.toString()
-            //              secondInv = secondInv :+ inv
-            //            })
+
             val changetoobj = valueSeq.map(jsValue => {
               val str = (jsValue \ "strength").get.toString()
               val frq = (jsValue \ "frequency").get.toString()
@@ -248,22 +227,8 @@ class Application extends Controller {
 
             Map("children" -> tojson.toString(), "name" -> x.name.replaceAll("^\"|\"$", ""), "VFrequency" -> x.vFrequency.replaceAll("^\"|\"$", ""), "strength" -> x.strength.replaceAll("^\"|\"$", ""), "EFrequency" -> x.frequency.replaceAll("^\"|\"$", ""), "entityid" -> result._1)
           })
-          //        val rel = result.map(x => {
-          //          Map("name" -> x.name.replaceAll("^\"|\"$", ""), "VFrequency" -> x.vFrequency.replaceAll("^\"|\"$", ""), "strength" -> x.strength.replaceAll("^\"|\"$", ""), "EFrequency" -> x.frequency.replaceAll("^\"|\"$", ""))
-          //          rel
-          //        }).map(x => {
-          //
-          //          accumulate += "data" -> Json.toJson(x)
-          //        });
-          //accumulate += "itr" -> itr.asInstanceOf[JsValue]
-
-          // val objMap = Map("name" -> relation.name, "strength" -> relation.strength)
-          // val json = Json.toJson(objMap)
-
-          //Ok(views.html.rohith("Showing data in table",rel,item,fFilter))
 
           Json.toJson(rel)
-        //  rel
       }
       output1
     }
@@ -323,7 +288,6 @@ class Application extends Controller {
       "name" -> getname
     )
 
-    //WS.url("http://40.124.54.95:8182/graphs/walmart/vertices/"+ id + "?name="+ getname)//.post()
     WS.url("http://40.124.54.95:8182/graphs/walmart/vertices/").post(data).map(s=>{
       println(s.body)
     })
