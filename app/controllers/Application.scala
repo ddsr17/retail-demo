@@ -55,7 +55,7 @@ class Application extends Controller {
     println(newsItem)
 
 
-    val futureResult = WS.url("http://40.124.54.95:8182/graphs/walmart/vertices?key=name&value=" + newsItem).withHeaders("Accept" -> "application/json").get().map {
+    val futureResult = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices?key=name&value=" + newsItem).withHeaders("Accept" -> "application/json").get().map {
       response => {
         val temp = (response.json \ "results").as[JsArray].value
         temp match {
@@ -80,7 +80,7 @@ class Application extends Controller {
 
       var data: Seq[Seq[JsValue]] = Seq()
 
-      val output = WS.url("http://40.124.54.95:8182/graphs/walmart/vertices/" + a._1 + "/outE?_label=relation&_take=" + nResults).withHeaders("Accept" -> "application/json").get().map {
+      val output = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices/" + a._1 + "/outE?_label=relation&_take=" + nResults).withHeaders("Accept" -> "application/json").get().map {
         result => {
           (result.json \ "results").as[JsArray].value
         }
@@ -108,13 +108,14 @@ class Application extends Controller {
 
       val now = response2.flatMap { x => {
         val qString = allInv.mkString(",")
-        val getallnames = WS.url("http://40.124.54.95:8182/graphs/walmart/tp/batch/vertices?values=[" + qString + "]").get().map {
+        val getallnames = WS.url("http://40.124.54.95:8182/graphs/capillary/tp/batch/vertices?values=[" + qString + "]").get().map {
           result => {
             val tmp = (result.json \ "results").as[JsArray].value
             val gettuple = tmp.map(x => {
               val name = (x \ "name").get.toString()
+              val regex = name.substring(1,name.indexOf("V")-2)
               val frequency = (x \ "frequency").get.toString()
-              val tuple = (name, frequency)
+              val tuple = (regex, frequency)
               tuple
             })
             gettuple
@@ -136,7 +137,7 @@ class Application extends Controller {
           var seq: Seq[String] = Seq()
           val parentid = d._1
 
-          val child: Future[Seq[JsValue]] = WS.url("http://40.124.54.95:8182/graphs/walmart/vertices/" + parentid + "/outE?_label=relation&_take=" + nResults).get().map(res => {
+          val child: Future[Seq[JsValue]] = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices/" + parentid + "/outE?_label=relation&_take=" + nResults).get().map(res => {
             (res.json \ "results").as[JsArray].value
           })
 
@@ -165,12 +166,13 @@ class Application extends Controller {
         val changedtoname = ness.flatMap(x => {
           val seq = secondInv.mkString(",")
 
-          val allnames = WS.url("http://40.124.54.95:8182/graphs/walmart/tp/batch/vertices?values=[" + seq +"]").get().map{result =>{
+          val allnames = WS.url("http://40.124.54.95:8182/graphs/capillary/tp/batch/vertices?values=[" + seq +"]").get().map{result =>{
             val allvalues = (result.json \ "results").as[JsArray].value
             val gg = allvalues.map(onevalue =>{
               val name=  (onevalue \ "name").get.toString()
+              val regex = name.substring(1,name.indexOf("V")-2)
               val id = (onevalue \ "_id").get.toString()
-              (id,name)
+              (id,regex)
             })
             gg
           }
@@ -189,7 +191,7 @@ class Application extends Controller {
           val withnames = x.map(y => {
             val ii = y.map(z =>{
               val kk = all.map(t => {
-                var a = m.get(z.name).get.replaceAll("^\"|\"$", "")
+                var a = m.get(z.name).get
                 childobj(a,z.strength,z.frequency)
               })
               kk
@@ -252,14 +254,14 @@ class Application extends Controller {
     println(start)
     println(end)
 
-    val id1 = WS.url("http://40.124.54.95:8182/graphs/walmart/vertices?key=name&value=" + start).get().map(x =>{
+    val id1 = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices?key=name&value=" + start).get().map(x =>{
       val y = (x.json \ "results").as[JsArray].value
       val z = (y.head \ "_id").get.toString()
       println("id1 is " + z)
       z
     })
 
-    val id2 = WS.url("http://40.124.54.95:8182/graphs/walmart/vertices?key=name&value=" + end).get().map(x =>{
+    val id2 = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices?key=name&value=" + end).get().map(x =>{
       val y = (x.json \ "results").as[JsArray].value
       val z = (y.head \ "_id").get.toString()
       println("id2 is " + z)
@@ -274,7 +276,7 @@ class Application extends Controller {
           "_label" -> "dummy"
         )
         println("creating edge")
-        WS.url("http://40.124.54.95:8182/graphs/walmart/edges").post(data).map(s => {
+        WS.url("http://40.124.54.95:8182/graphs/capillary/edges").post(data).map(s => {
           println(s.body)
         })
         y
@@ -294,7 +296,7 @@ class Application extends Controller {
       "name" -> getname
     )
 
-    WS.url("http://40.124.54.95:8182/graphs/walmart/vertices/").post(data).map(s=>{
+    WS.url("http://40.124.54.95:8182/graphs/capillary/vertices/").post(data).map(s=>{
       println(s.body)
     })
     Ok("Added vertex with id 987")
