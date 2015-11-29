@@ -55,7 +55,7 @@ class Application extends Controller {
     println(newsItem)
 
 
-    val futureResult = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices?key=name&value=" + newsItem).withHeaders("Accept" -> "application/json").get().map {
+    val futureResult = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices?key=name&value=" + item).withHeaders("Accept" -> "application/json").get().map {
       response => {
         val temp = (response.json \ "results").as[JsArray].value
         temp match {
