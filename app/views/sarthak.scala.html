@@ -1,7 +1,7 @@
 @import play.api.libs.json.JsValue
 
 
-@main("Welcome to Play") {
+@main("Retail Demo") {
 
   <div class="container">
     <div class="row">
@@ -106,7 +106,7 @@
   }
 
   .node text {
-  font: 10px sans-serif;
+  font: 12px sans-serif;
   pointer-events: none;
   text-anchor: middle;
   }
@@ -288,13 +288,17 @@ function click(d) {
 
         var nodes = chartdata
 
-var width = 960,
+var width = 1100,
     height = 600,
     root;
 
 var force = d3.layout.force()
-    .linkDistance(100)
-    .charge(-120)
+    .linkDistance(80)
+    .charge(function(d){
+    var charge = -400
+    if(d.index === 0) charge = 10*charge;
+    return charge
+    })
     .gravity(.05)
     .size([width, height])
     .on("tick", tick);
@@ -308,6 +312,9 @@ var link = svg.selectAll(".link"),
 
 
   root = nodes[0];
+    nodes[0].fixed = true;
+    nodes[0].x = width / 2;
+    nodes[0].y = height / 2;
   update();
 	   }
 	   })

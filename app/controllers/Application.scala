@@ -52,7 +52,7 @@ class Application extends Controller {
 
     val newsItem = item.toLowerCase()
     var freq = ""
-    println(newsItem)
+    println(item)
 
 
     val futureResult = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices?key=name&value=" + item).withHeaders("Accept" -> "application/json").get().map {
@@ -80,7 +80,7 @@ class Application extends Controller {
 
       var data: Seq[Seq[JsValue]] = Seq()
 
-      val output = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices/" + a._1 + "/outE?_label=relation&_take=" + nResults).withHeaders("Accept" -> "application/json").get().map {
+      val output = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices/" + a._1 + "/outE?_take=" + nResults).withHeaders("Accept" -> "application/json").get().map {
         result => {
           (result.json \ "results").as[JsArray].value
         }
@@ -113,7 +113,7 @@ class Application extends Controller {
             val tmp = (result.json \ "results").as[JsArray].value
             val gettuple = tmp.map(x => {
               val name = (x \ "name").get.toString()
-              val regex = name.substring(1,name.indexOf("V")-2)
+              val regex = name.substring(1,name.indexOf("V"))
               val frequency = (x \ "frequency").get.toString()
               val tuple = (regex, frequency)
               tuple
@@ -137,7 +137,7 @@ class Application extends Controller {
           var seq: Seq[String] = Seq()
           val parentid = d._1
 
-          val child: Future[Seq[JsValue]] = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices/" + parentid + "/outE?_label=relation&_take=" + nResults).get().map(res => {
+          val child: Future[Seq[JsValue]] = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices/" + parentid + "/outE?_take=" + nResults).get().map(res => {
             (res.json \ "results").as[JsArray].value
           })
 
@@ -152,7 +152,7 @@ class Application extends Controller {
               childobj(inid, str, frq)
             })
 
-            val y = changetoobj.take(3)
+            val y = changetoobj.take(5)
             y
           })
 
@@ -170,7 +170,7 @@ class Application extends Controller {
             val allvalues = (result.json \ "results").as[JsArray].value
             val gg = allvalues.map(onevalue =>{
               val name=  (onevalue \ "name").get.toString()
-              val regex = name.substring(1,name.indexOf("V")-2)
+              val regex = name.substring(1,name.indexOf("V"))
               val id = (onevalue \ "_id").get.toString()
               (id,regex)
             })

@@ -113,7 +113,7 @@ class Application extends Controller {
             val tmp = (result.json \ "results").as[JsArray].value
             val gettuple = tmp.map(x => {
               val name = (x \ "name").get.toString()
-              val regex = name.substring(1,name.indexOf("V")-2)
+              val regex = name.substring(1,name.indexOf("V"))
               val frequency = (x \ "frequency").get.toString()
               val tuple = (regex, frequency)
               tuple
@@ -170,7 +170,7 @@ class Application extends Controller {
             val allvalues = (result.json \ "results").as[JsArray].value
             val gg = allvalues.map(onevalue =>{
               val name=  (onevalue \ "name").get.toString()
-              val regex = name.substring(1,name.indexOf("V")-2)
+              val regex = name.substring(1,name.indexOf("V"))
               val id = (onevalue \ "_id").get.toString()
               (id,regex)
             })
