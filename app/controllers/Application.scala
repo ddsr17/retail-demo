@@ -43,6 +43,7 @@ class Application extends Controller {
   var allInv : Seq[String] = Seq()
   var secondInv: Seq[String] = Seq()
   val nResults = 10
+  val url = "http://40.124.54.95:8182/graphs/capillary"
 
   def getVertices3 = Action.async(BodyParsers.parse.json) { implicit request =>
     val tt = request.body
@@ -55,7 +56,7 @@ class Application extends Controller {
     println(item)
 
 
-    val futureResult = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices?key=name&value=" + item).withHeaders("Accept" -> "application/json").get().map {
+    val futureResult = WS.url(url + "/vertices?key=name&value=" + item).withHeaders("Accept" -> "application/json").get().map {
       response => {
         val temp = (response.json \ "results").as[JsArray].value
         temp match {
@@ -80,7 +81,7 @@ class Application extends Controller {
 
       var data: Seq[Seq[JsValue]] = Seq()
 
-      val output = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices/" + a._1 + "/outE?_take=" + nResults).withHeaders("Accept" -> "application/json").get().map {
+      val output = WS.url(url + "/vertices/" + a._1 + "/outE?_take=" + nResults).withHeaders("Accept" -> "application/json").get().map {
         result => {
           (result.json \ "results").as[JsArray].value
         }
@@ -108,7 +109,7 @@ class Application extends Controller {
 
       val now = response2.flatMap { x => {
         val qString = allInv.mkString(",")
-        val getallnames = WS.url("http://40.124.54.95:8182/graphs/capillary/tp/batch/vertices?values=[" + qString + "]").get().map {
+        val getallnames = WS.url(url +"/tp/batch/vertices?values=[" + qString + "]").get().map {
           result => {
             val tmp = (result.json \ "results").as[JsArray].value
             val gettuple = tmp.map(x => {
@@ -137,7 +138,7 @@ class Application extends Controller {
           var seq: Seq[String] = Seq()
           val parentid = d._1
 
-          val child: Future[Seq[JsValue]] = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices/" + parentid + "/outE?_take=" + nResults).get().map(res => {
+          val child: Future[Seq[JsValue]] = WS.url(url + "/vertices/" + parentid + "/outE?_take=" + nResults).get().map(res => {
             (res.json \ "results").as[JsArray].value
           })
 
@@ -166,7 +167,7 @@ class Application extends Controller {
         val changedtoname = ness.flatMap(x => {
           val seq = secondInv.mkString(",")
 
-          val allnames = WS.url("http://40.124.54.95:8182/graphs/capillary/tp/batch/vertices?values=[" + seq +"]").get().map{result =>{
+          val allnames = WS.url(url + "/tp/batch/vertices?values=[" + seq +"]").get().map{result =>{
             val allvalues = (result.json \ "results").as[JsArray].value
             val gg = allvalues.map(onevalue =>{
               val name=  (onevalue \ "name").get.toString()
@@ -254,14 +255,14 @@ def addEdge() = Action(BodyParsers.parse.json){implicit request =>
     println(start)
     println(end)
 
-    val id1 = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices?key=name&value=" + start).get().map(x =>{
+    val id1 = WS.url(url + "/vertices?key=name&value=" + start).get().map(x =>{
       val y = (x.json \ "results").as[JsArray].value
       val z = (y.head \ "_id").get.toString()
       println("id1 is " + z)
       z
     })
 
-    val id2 = WS.url("http://40.124.54.95:8182/graphs/capillary/vertices?key=name&value=" + end).get().map(x =>{
+    val id2 = WS.url(url + "/vertices?key=name&value=" + end).get().map(x =>{
       val y = (x.json \ "results").as[JsArray].value
       val z = (y.head \ "_id").get.toString()
       println("id2 is " + z)
@@ -278,7 +279,7 @@ def addEdge() = Action(BodyParsers.parse.json){implicit request =>
           "_label" -> "dummy"
         )
         println("creating edge")
-        WS.url("http://40.124.54.95:8182/graphs/capillary/edges").post(data).map(s => {
+        WS.url(url + "/edges").post(data).map(s => {
           println(s.body)
         })
       y
@@ -299,7 +300,7 @@ def addEdge() = Action(BodyParsers.parse.json){implicit request =>
       "name" -> name
      )
 
-    WS.url("http://40.124.54.95:8182/graphs/capillary/vertices/").post(data).map(s=>{
+    WS.url(url + "/vertices/").post(data).map(s=>{
       println(s.body)
     })
     Ok("Added vertex with id 987")
