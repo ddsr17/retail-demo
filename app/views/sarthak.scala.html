@@ -34,7 +34,7 @@
 
                 <div class="form-group">
                   <div class="row">
-                    <button class="btn btn-default" id="button" type="button">Go!</button>
+                    <button class="btn btn-default" id="button" type="button">Go</button>
                   </div>
                 </div>
               </form>
@@ -161,6 +161,7 @@
         })
 
 	$("#button").click(function(){
+	$("#graph").html(" ")
 		var name = $("#search-input1").val()
 		console.log(name)
 
@@ -283,9 +284,6 @@ function click(d) {
 
              console.log("chartdata is " , chartdata)
 
-			$("#graph").html(" ")
-        console.log("chart data -->", chartdata);
-
         var nodes = chartdata
 
 var width = 1100,
@@ -303,7 +301,7 @@ var force = d3.layout.force()
     .size([width, height])
     .on("tick", tick);
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#graph").append("svg")
     .attr("width", width)
     .attr("height", height);
 

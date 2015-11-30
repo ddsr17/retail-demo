@@ -234,7 +234,7 @@ class Application extends Controller {
             }))
 
 
-            Map("children" -> tojson.toString(), "name" -> x.name.replaceAll("^\"|\"$", ""), "VFrequency" -> x.vFrequency.replaceAll("^\"|\"$", ""), "strength" -> x.strength.replaceAll("^\"|\"$", ""), "EFrequency" -> x.frequency.replaceAll("^\"|\"$", ""), "entityid" -> result._1)
+            Map("children" -> tojson.toString(), "name" -> x.name.replaceAll("^\"|\"$", ""), "VFrequency" -> x.vFrequency.replaceAll("^\"|\"$", ""), "strength" -> x.strength.replaceAll("^\"|\"$", ""), "EFrequency" -> x.frequency.replaceAll("^\"|\"$", ""), "entityid" -> result._1,"actualid" -> x.id.replaceAll("^\"|\"$", ""))
           })
 
           Json.toJson(rel)
